@@ -1,0 +1,19 @@
+{
+    "name": "Go Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+    },
+    "appPort": [
+        "8080:80/tcp"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": ["golang.go"]
+        }
+    },
+    "runArgs": [
+        "-v", "${localEnv:HOME}/.ssh:/root/.ssh",
+        "-v", "${localEnv:HOME}/.gitconfig:/root/.gitconfig",
+        "--network=lab99"
+    ]
+}
