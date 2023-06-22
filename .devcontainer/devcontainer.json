@@ -1,5 +1,5 @@
 {
-    "name": "Go Dev Container",
+    "name": "NanoGo",
     "build": {
         "dockerfile": "Dockerfile",
     },
@@ -14,6 +14,6 @@
     "runArgs": [
         "-v", "${localEnv:HOME}/.ssh:/root/.ssh",
         "-v", "${localEnv:HOME}/.gitconfig:/root/.gitconfig",
-        "--network=lab99"
+        "--network=codelesshub"
     ]
 }
