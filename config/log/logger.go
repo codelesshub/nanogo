@@ -9,7 +9,7 @@ import (
 func GetLoggerFromContext(ctx context.Context) *log.Entry {
 	logger := ctx.Value("logger")
 	if logger == nil {
-		return LoadLog("")
+		LoadLog()
 	}
 	return logger.(*log.Entry)
 }
