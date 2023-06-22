@@ -9,4 +9,13 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 )
 
-require golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+require (
+	github.com/gomodule/redigo v1.8.9 // indirect
+	github.com/robfig/cron v1.2.0 // indirect
+)
+
+require (
+	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/gocraft/work v0.5.1
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+)
