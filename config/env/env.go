@@ -10,4 +10,6 @@ func LoadEnv() {
 	if err != nil {
 		log.Fatal("Erro carregando arquivo .env")
 	}
+
+	log.Info("Carregamento do arquivo .env realizado")
 }
