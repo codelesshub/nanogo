@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/codelesshub/nanogo/config"
 	"github.com/codelesshub/nanogo/config/env"
 	redis "github.com/codelesshub/nanogo/config/redis"
 	"github.com/codelesshub/nanogo/config/webserver"
@@ -17,4 +18,6 @@ func main() {
 
 	// Inicializa o webserver
 	webserver.StartWebServer()
+
+	config.WaitSignalStop()
 }
