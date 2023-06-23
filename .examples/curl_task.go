@@ -18,8 +18,11 @@ func NewCurlTask() *CurlTask {
 // Implementa a interface RedisQueueConsumer
 func (ct *CurlTask) Run(job *work.Job) error {
 	fmt.Println("Executando a tarefa curl...")
+
+	url := job.ArgString("url")
+
+	fmt.Printf("A URL a ser processada é: %s\n", url)
 	// Seu código para executar a tarefa curl aqui
-	return nil
 }
 
 var _ redis.RedisQueueConsumerInterface = (*CurlTask)(nil)

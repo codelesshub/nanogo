@@ -67,7 +67,7 @@ func (rq *RedisQueue) connect() {
 
 func Enqueue(queueName string, params map[string]interface{}) bool {
 
-	job, err := RedisQ.Enqueuer.Enqueue(queueName, params)
+	job, err := RedisQ.Enqueuer.Enqueue(queueName, work.Q(params))
 
 	if err != nil {
 		logger.Fatal("Erro ao enfileirar tarefa:", err)

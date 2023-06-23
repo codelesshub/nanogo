@@ -16,6 +16,10 @@ func main() {
 	//Inicializa o NewCurlTask na fila my_job
 	redis.RedisQueueConsumer(tasks.NewCurlTask(), "my_job")
 
+	//Publica uma mensagem na fila my_job
+	args := map[string]interface{}{"url": "http://example.com"}
+	redis.Enqueue("CRONTAB_WORKER_CURL", args)
+
 	//Aguarda o sinal de stop para parar a aplicação
 	config.WaitSignalStop()
 }
