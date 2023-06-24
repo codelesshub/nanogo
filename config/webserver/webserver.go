@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/codelesshub/nanogo/config/log"
 )
 
 func StartWebServer() {
