@@ -13,17 +13,6 @@ func main() {
 	// Carrega o arquivo .env
 	env.LoadEnv()
 
-	// redis.StartRedisQueue()
-
-	// args := map[string]interface{}{"url": "http://example.com"}
-	// redis.Enqueue("CRONTAB_WORKER_CURL", args)
-	// redis.RedisQueueConsumer(tasks.NewCurlTask(), "my_job")
-
-	// Inicializa o webserver
-	// webserver.StartWebServer()
-
-	// config.WaitSignalStop()
-
 	// INSERT
 	repository := mongodb.NewMongoRepository("users")
 	document := map[string]interface{}{
