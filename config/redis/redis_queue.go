@@ -1,9 +1,9 @@
 package redis
 
 import (
+	"github.com/codelesshub/nanogo/config/env"
 	logger "github.com/codelesshub/nanogo/config/log"
 
-	"os"
 	"sync"
 
 	"github.com/gocraft/work"
@@ -24,9 +24,9 @@ type RedisQueue struct {
 var RedisQ *RedisQueue
 
 func StartRedisQueue() {
-	redisAddr := getRedisAddress()
-	redisNamespace := getRedisNamespace()
-	redisPass := getRedisPassword()
+	redisAddr := env.GetEnv("REDIS_ADDR")
+	redisNamespace := env.GetEnv("REDIS_NAMESPACE")
+	redisPass := env.GetEnv("REDIS_PASSWORD", "")
 
 	RedisQ = &RedisQueue{
 		redisAddr: redisAddr,
@@ -77,32 +77,4 @@ func Enqueue(queueName string, params map[string]interface{}) bool {
 	logger.Debug("Tarefa enfileirada com sucesso. ID do job:", job.ID)
 
 	return true
-}
-
-func getRedisAddress() string {
-	redisAddr := os.Getenv("REDIS_ADDR")
-
-	if redisAddr == "" {
-		logger.Fatal("O endereço do Redis não foi definido no arquivo .env")
-	}
-
-	return redisAddr
-}
-
-func getRedisNamespace() string {
-	redisNamespace := os.Getenv("REDIS_NAMESPACE")
-	if redisNamespace == "" {
-		logger.Fatal("O namespace do Redis não foi definido no arquivo .env")
-	}
-
-	return redisNamespace
-}
-
-func getRedisPassword() string {
-	redisPass := os.Getenv("REDIS_PASSWORD")
-	if redisPass == "" {
-		logger.Fatal("A senha do Redis não foi definida no arquivo .env")
-	}
-
-	return redisPass
 }

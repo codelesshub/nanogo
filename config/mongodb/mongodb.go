@@ -3,13 +3,12 @@ package mongodb
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"sync"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
+	"github.com/codelesshub/nanogo/config/env"
 	"github.com/codelesshub/nanogo/config/log"
 )
 
@@ -21,28 +20,20 @@ var (
 
 func ConnectMongoDB() (*mongo.Database, error) {
 	once.Do(func() {
-		mongoURI := os.Getenv("MONGO_URI")
+		mongoURI := env.GetEnv("MONGO_URI", "")
 		var clientOptions *options.ClientOptions
 
 		if mongoURI != "" {
 			clientOptions = options.Client().ApplyURI(mongoURI)
 		} else {
-			dbname := os.Getenv("MONGO_DBNAME")
-			username := os.Getenv("MONGO_USERNAME")
-			password := os.Getenv("MONGO_PASSWORD")
-			host := os.Getenv("MONGO_HOST")
-			port, err := strconv.Atoi(os.Getenv("MONGO_PORT"))
-			if err != nil {
-				port = 27017 // Default MongoDB Port
-			}
-
-			if dbname == "" || username == "" || password == "" || host == "" {
-				err = fmt.Errorf("MongoDB environment variables are not set properly!")
-				return
-			}
+			dbnameAuth := env.GetEnv("MONGO_AUTH_DBNAME", "admin")
+			username := env.GetEnv("MONGO_USERNAME")
+			password := env.GetEnv("MONGO_PASSWORD")
+			host := env.GetEnv("MONGO_HOST")
+			port := env.GetEnv("MONGO_PORT", "27017")
 
 			connectionURI := fmt.Sprintf("mongodb://%s:%s@%s:%d", username, password, host, port)
-			clientOptions = options.Client().ApplyURI(connectionURI).SetAuth(options.Credential{AuthSource: dbname})
+			clientOptions = options.Client().ApplyURI(connectionURI).SetAuth(options.Credential{AuthSource: dbnameAuth})
 		}
 
 		clientInstance, err = mongo.Connect(context.Background(), clientOptions)
@@ -54,7 +45,7 @@ func ConnectMongoDB() (*mongo.Database, error) {
 
 	log.Info("Connected to MongoDB!")
 
-	dbname := os.Getenv("MONGO_DBNAME")
+	dbname := env.GetEnv("MONGO_DBNAME")
 
 	return clientInstance.Database(dbname), nil
 }

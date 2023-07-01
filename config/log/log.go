@@ -3,6 +3,7 @@ package log
 import (
 	"os"
 
+	"github.com/codelesshub/nanogo/config/env"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,52 +23,22 @@ func LoadLog(correlationID ...string) *logrus.Entry {
 	logrus.SetOutput(os.Stdout)
 	logrus.SetLevel(logrus.TraceLevel)
 
-	if getEnvironment() == "production" {
+	if env.GetEnv("ENV", "dev") == "production" {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	} else {
 		logrus.SetFormatter(&logrus.TextFormatter{})
 	}
 
 	logger = logrus.WithFields(logrus.Fields{
-		"app":              getApplicationName(),
-		"env":              getEnvironment(),
-		"version":          getVersion(),
+		"app":              env.GetEnv("APP_NAME"),
+		"env":              env.GetEnv("ENV"),
+		"version":          env.GetEnv("VERSION"),
 		"x-correlation-id": cid,
 	})
 
 	logInitialized = true
 
 	return logger
-}
-
-func getApplicationName() string {
-	application_name := os.Getenv("SERVER_PORT")
-
-	if application_name == "" {
-		logrus.Fatal("O nome da aplicação não foi definida no arquivo .env")
-	}
-
-	return application_name
-}
-
-func getEnvironment() string {
-	env := os.Getenv("ENV")
-
-	if env == "" {
-		logrus.Fatal("O ambiente não foi definida no arquivo .env")
-	}
-
-	return env
-}
-
-func getVersion() string {
-	version := os.Getenv("VERSION")
-
-	if version == "" {
-		logrus.Fatal("A versão não foi definida no arquivo .env")
-	}
-
-	return version
 }
 
 func Fatal(args ...interface{}) {
@@ -92,4 +63,28 @@ func Info(args ...interface{}) {
 	}
 
 	logger.Info(args)
+}
+
+func Debugf(format string, args ...interface{}) {
+	if !logInitialized {
+		LoadLog()
+	}
+
+	logger.Debugf(format, args)
+}
+
+func Infof(format string, args ...interface{}) {
+	if !logInitialized {
+		LoadLog()
+	}
+
+	logger.Infof(format, args)
+}
+
+func Fatalf(format string, args ...interface{}) {
+	if !logInitialized {
+		LoadLog()
+	}
+
+	logger.Fatalf(format, args)
 }
