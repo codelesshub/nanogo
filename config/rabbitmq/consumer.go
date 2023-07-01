@@ -1,13 +1,12 @@
 package rabbitmq
 
 import (
+	"encoding/json"
 	"log"
-
-	"github.com/streadway/amqp"
 )
 
 type Consumer interface {
-	Consume(headers amqp.Table, body []byte)
+	Consume(body map[string]interface{}, headers map[string]interface{})
 }
 
 func Consume(exchange Exchange, queue Queue, consumer Consumer) {
@@ -33,7 +32,28 @@ func Consume(exchange Exchange, queue Queue, consumer Consumer) {
 
 	go func() {
 		for d := range msgs {
-			consumer.Consume(d.Headers, d.Body)
+			bodyMap := make(map[string]interface{})
+
+			err := json.Unmarshal(d.Body, &bodyMap)
+			if err != nil {
+				log.Fatalf("Error decoding JSON: %s", err)
+				continue
+			}
+
+			headerBytes, err := json.Marshal(d.Headers)
+			if err != nil {
+				log.Fatalf("Error encoding headers to JSON: %s", err)
+				continue
+			}
+
+			headersMap := make(map[string]interface{})
+			err = json.Unmarshal(headerBytes, &headersMap)
+			if err != nil {
+				log.Fatalf("Error decoding headers JSON: %s", err)
+				continue
+			}
+
+			consumer.Consume(bodyMap, headersMap)
 		}
 	}()
 }
