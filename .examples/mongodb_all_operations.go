@@ -5,8 +5,8 @@ import (
 
 	"github.com/codelesshub/nanogo/config/env"
 	"github.com/codelesshub/nanogo/config/mongodb"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func main() {
@@ -16,26 +16,21 @@ func main() {
 	// INSERT
 	repository := mongodb.NewMongoRepository("users")
 	document := map[string]interface{}{
+		"_id":   uuid.New(), // Use UUID for document ID
 		"nome":  "João",
 		"idade": 30,
 		"email": "joao@gmail.com",
 	}
-	insertResult, err := repository.Insert(document)
+	id, err := repository.Insert(document)
 	if err != nil {
 		// Handle error
 	}
-	fmt.Println("Inserted document with ID:", insertResult.InsertedID)
-
-	// Convert InsertedID to ObjectID
-	id, ok := insertResult.InsertedID.(primitive.ObjectID)
-	if !ok {
-		// Handle error if conversion is not successful
-	}
+	fmt.Println("Inserted document with ID:", id)
 
 	update := map[string]interface{}{
 		"email": "joao_novo@gmail.com",
 	}
-	updateResult, err := repository.Update(id, update)
+	updateResult, err := repository.UpdateById(id, update)
 	if err != nil {
 		// Handle error
 	}
@@ -54,7 +49,7 @@ func main() {
 		fmt.Println("Email field does not exist")
 	}
 
-	result, err := repository.Delete(id)
+	result, err := repository.DeleteById(id)
 	if err != nil {
 		// Handle error
 	}

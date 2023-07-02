@@ -2,12 +2,14 @@ package mongodb
 
 import (
 	"context"
-	"log"
 	"time"
 
+	"github.com/codelesshub/nanogo/config/log"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	// other imports
 )
 
 type MongoRepository struct {
@@ -26,25 +28,35 @@ func NewMongoRepository(collectionName string) *MongoRepository {
 	return &MongoRepository{collection: collection}
 }
 
-func (r *MongoRepository) Insert(document map[string]interface{}) (*mongo.InsertOneResult, error) {
+func (r *MongoRepository) Insert(document map[string]interface{}) (*uuid.UUID, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	result, err := r.collection.InsertOne(ctx, document)
+	// Generate a new UUID
+	uuid, err := uuid.NewRandom()
+
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	// Add the UUID to the document as a byte slice
+	document["_id"] = uuid[:]
+
+	_, err = r.collection.InsertOne(ctx, document)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &uuid, nil
 }
 
-
-func (r *MongoRepository) Update(id primitive.ObjectID, update map[string]interface{}) (*mongo.UpdateResult, error) {
+func (r *MongoRepository) UpdateById(id *uuid.UUID, update map[string]interface{}) (*mongo.UpdateResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := bson.D{{"_id", id}}
-	updateDoc := bson.M{"$set": update} // Convert map to bson.M
+	filter := bson.D{{"_id", id[:]}}
+	updateDoc := bson.M{"$set": update}
 	result, err := r.collection.UpdateOne(ctx, filter, updateDoc)
 	if err != nil {
 		return nil, err
@@ -53,12 +65,11 @@ func (r *MongoRepository) Update(id primitive.ObjectID, update map[string]interf
 	return result, nil
 }
 
-
-func (r *MongoRepository) Delete(id primitive.ObjectID) (*mongo.DeleteResult, error) {
+func (r *MongoRepository) DeleteById(id *uuid.UUID) (*mongo.DeleteResult, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	filter := bson.D{{"_id", id}}
+	filter := bson.D{{"_id", id[:]}}
 	result, err := r.collection.DeleteOne(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -67,21 +78,30 @@ func (r *MongoRepository) Delete(id primitive.ObjectID) (*mongo.DeleteResult, er
 	return result, nil
 }
 
-func (r *MongoRepository) FindById(id primitive.ObjectID) (bson.M, error) {
+func (r *MongoRepository) FindById(id *uuid.UUID) (map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	filter := bson.D{{"_id", id}}
-	var result bson.M
+	var result map[string]interface{}
 	err := r.collection.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
 		return nil, err
 	}
 
+	// Convert _id field back to uuid.UUID
+	if idField, ok := result["_id"].(primitive.Binary); ok {
+		convertedUUID, err := uuid.FromBytes(idField.Data)
+		if err != nil {
+			// handle error
+		}
+		result["_id"] = convertedUUID
+	}
+
 	return result, nil
 }
 
-func (r *MongoRepository) FindAll() ([]bson.M, error) {
+func (r *MongoRepository) FindAll() ([]map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -91,15 +111,25 @@ func (r *MongoRepository) FindAll() ([]bson.M, error) {
 	}
 	defer cursor.Close(ctx)
 
-	var results []bson.M
+	var results []map[string]interface{}
 	if err = cursor.All(ctx, &results); err != nil {
 		log.Fatal(err)
+	}
+
+	for i := range results {
+		if idField, ok := results[i]["_id"].(primitive.Binary); ok {
+			convertedUUID, err := uuid.FromBytes(idField.Data)
+			if err != nil {
+				// handle error
+			}
+			results[i]["_id"] = convertedUUID
+		}
 	}
 
 	return results, nil
 }
 
-func (r *MongoRepository) RawQuery(query bson.M) ([]bson.M, error) {
+func (r *MongoRepository) RawQuery(query bson.M) ([]map[string]interface{}, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -109,9 +139,19 @@ func (r *MongoRepository) RawQuery(query bson.M) ([]bson.M, error) {
 	}
 	defer cursor.Close(ctx)
 
-	var results []bson.M
+	var results []map[string]interface{}
 	if err = cursor.All(ctx, &results); err != nil {
 		return nil, err
+	}
+
+	for i := range results {
+		if idField, ok := results[i]["_id"].(primitive.Binary); ok {
+			convertedUUID, err := uuid.FromBytes(idField.Data)
+			if err != nil {
+				// handle error
+			}
+			results[i]["_id"] = convertedUUID
+		}
 	}
 
 	return results, nil

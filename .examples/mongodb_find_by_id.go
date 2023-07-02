@@ -5,7 +5,7 @@ import (
 
 	mongodb "github.com/codelesshub/nanogo/config/database"
 	"github.com/codelesshub/nanogo/config/env"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	mongodb.ConnectMongoDB()
 
 	repository := mongodb.NewMongoRepository("users")
-	id, _ := primitive.ObjectIDFromHex("60d5ec9af682fbd39a8920") // Use the correct ID
+	id, _ := uuid.Parse("3b241101-aa3d-4adb-8c92-fb4d4f6b1f16") // Use the correct UUID
 	document, err := repository.FindById(id)
 	if err != nil {
 		// Handle error
