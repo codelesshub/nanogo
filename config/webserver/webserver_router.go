@@ -10,7 +10,7 @@ func WebServerRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.Use(CorrelationIDMiddleware)
 
-	router.HandleFunc("/healthcheck", controller.HealthcheckHandler)
+	router.HandleFunc("/healthcheck", controller.HealthcheckHandler).Methods("GET")
 
 	return router
 }
